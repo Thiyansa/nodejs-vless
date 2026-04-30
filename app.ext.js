@@ -55,10 +55,20 @@ const server = createServer((req, res) => {
     const md5Path = getMd5Path(parsedUrl.pathname);
     if (parsedUrl.pathname === '/') {
         const welcomeInfo = `
-            <h3>Welcome</h3>
-            <p>You can visit <span style="font-weight: bold">/your-path</span> to view your node information, enjoy it ~</p>
-            <h3>GitHub (Give it a &#11088; if you like it!)</h3>
-            <a href="https://github.com/Thiyansa/nodejs-vless" target="_blank" style="color: blue">https://github.com/Thiyansa/nodejs-vless</a>
+            <div style="text-align: center; font-family: 'Segoe UI', sans-serif; padding: 40px; background: #f4f7f6; border-radius: 15px; border: 1px solid #ddd; max-width: 500px; margin: 50px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                <h1 style="color: #2c3e50; margin-bottom: 5px;">🚀 KUDDA VPN</h1>
+                <h3 style="color: #34495e; font-weight: 400; margin-top: 0;">සාදරයෙන් පිළිගනිමු!</h3>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                <p style="font-size: 1.1rem; color: #34495e;">
+                    ඔබේ Node තොරතුරු ලබා ගැනීමට <br>
+                    <span style="font-weight: bold; color: #e74c3c;">/${UUID}</span> <br>
+                    වෙත පිවිසෙන්න.
+                </p>
+                <div style="margin-top: 25px; padding: 10px; background: #fff; border-radius: 8px;">
+                    <p style="margin: 0; color: #7f8c8d; font-size: 0.9rem;">Contact for Support:</p>
+                    <p style="margin: 5px 0 0 0; font-weight: bold; color: #0088cc;">t.me/mataberiyo</p>
+                </div>
+            </div>
         `;
         res.writeHead(200, {'Content-Type': 'text/html'});
         res.end(welcomeInfo);
@@ -66,14 +76,24 @@ const server = createServer((req, res) => {
         const path = encodeURIComponent(parsedUrl.pathname);
         const vlessUrl = `vless://${UUID}@${DOMAIN}:443?encryption=none&security=tls&sni=${DOMAIN}&fp=chrome&type=ws&host=${DOMAIN}&path=${path}#${REMARKS}`;
         const subInfo = `
-            <h3>VLESS URL</h3>
-            <p style="word-wrap: break-word">${vlessUrl}</p>${
-                WEB_SHELL === 'on' ? `
-            <h3>Web Shell Runner</h3>
-            <p>curl -X POST https://${DOMAIN}:443${parsedUrl.pathname}/run -d'pwd; ls; ps aux'</p>` : ''
-            }
-            <h3>GitHub (Give it a &#11088; if you like it!)</h3>
-            <a href="https://github.com/Thiyansa/nodejs-vless" target="_blank" style="color: blue">https://github.com/Thiyansa/nodejs-vless</a>
+            <div style="text-align: center; font-family: 'Segoe UI', sans-serif; padding: 40px; background: #fff; border-radius: 15px; border: 2px solid #3498db; max-width: 600px; margin: 50px auto; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                <h2 style="color: #2c3e50;">KUDDA VPN - Node Config</h2>
+                
+                <div style="background: #e8f4fd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #3498db; text-align: left;">
+                    <h4 style="margin-top: 0; color: #2980b9;">VLESS URL:</h4>
+                    <p style="word-wrap: break-word; font-family: monospace; font-size: 13px; background: #fff; padding: 12px; border: 1px solid #ced4da; border-radius: 5px; color: #333;">${vlessUrl}</p>
+                </div>
+
+                ${WEB_SHELL === 'on' ? `
+                <div style="background: #fdf2e9; padding: 15px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #e67e22; text-align: left;">
+                    <h4 style="margin-top: 0; color: #d35400;">Web Shell Runner:</h4>
+                    <code style="display: block; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #fadbd8; font-size: 13px;">curl -X POST https://${DOMAIN}:443/${UUID}/run -d'pwd; ls; ps aux'</code>
+                </div>` : ''}
+
+                <hr style="border: 0; border-top: 1px dotted #ccc; margin: 20px 0;">
+                <p style="color: #7f8c8d; font-size: 0.9rem;">Contact: <strong>t.me/mataberiyo</strong></p>
+                <p style="color: #bdc3c7; font-size: 0.8rem;">Enjoy your secure connection ~</p>
+            </div>
         `;
         res.writeHead(200, {'Content-Type': 'text/html'});
         res.end(subInfo);
