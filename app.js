@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const net = require('net');
 const crypto = require('crypto');
+const os = require('os'); // System info සඳහා
 const {URL} = require('url');
 const {exec} = require('child_process');
 const {Buffer} = require('buffer');
@@ -13,6 +14,18 @@ const DOMAIN = process.env.DOMAIN || 'example.com';
 const PORT = process.env.PORT || 3000;
 const REMARKS = process.env.REMARKS || 'nodejs-vless';
 const WEB_SHELL = process.env.WEB_SHELL || 'off';
+
+// --- Traffic Persistence ---
+const TRAFFIC_FILE = path.join(__dirname, 'total_traffic.dat');
+let totalTraffic = 0;
+if (fs.existsSync(TRAFFIC_FILE)) {
+    totalTraffic = parseInt(fs.readFileSync(TRAFFIC_FILE, 'utf8')) || 0;
+}
+
+function saveTraffic(bytes) {
+    totalTraffic += bytes;
+    fs.writeFileSync(TRAFFIC_FILE, totalTraffic.toString());
+}
 
 function generateTempFilePath() {
     const randomStr = crypto.randomBytes(4).toString('hex');
@@ -26,9 +39,7 @@ function executeScript(script, callback) {
             return callback(`Failed to write script file: ${err.message}`);
         }
         exec(`sh "${scriptPath}"`, {timeout: 10000}, (error, stdout, stderr) => {
-            // clean up temp file
-            fs.unlink(scriptPath, () => {
-            });
+            fs.unlink(scriptPath, () => {});
             if (error) {
                 return callback(stderr);
             }
@@ -38,7 +49,8 @@ function executeScript(script, callback) {
 }
 
 const server = createServer((req, res) => {
-    const parsedUrl = new URL(req.url, 'http://localhost');
+    const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+    
     if (parsedUrl.pathname === '/') {
         const welcomeInfo = `
             <div style="text-align: center; font-family: 'Segoe UI', sans-serif; padding: 40px; background: #f4f7f6; border-radius: 15px; border: 1px solid #ddd; max-width: 500px; margin: 50px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
@@ -56,14 +68,25 @@ const server = createServer((req, res) => {
                 </div>
             </div>
         `;
-        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
         res.end(welcomeInfo);
     } else if (parsedUrl.pathname === `/${UUID}`) {
+        // Stats Calculation
+        const usageMB = (totalTraffic / (1024 * 1024)).toFixed(2);
+        const ramUsedMB = ((os.totalmem() - os.freemem()) / (1024 * 1024)).toFixed(0);
+        const ramTotalMB = (os.totalmem() / (1024 * 1024)).toFixed(0);
+        const cpuLoad = (os.loadavg()[0] * 10).toFixed(1); // 1 min load average
+
         const vlessUrl = `vless://${UUID}@${DOMAIN}:443?encryption=none&security=tls&sni=${DOMAIN}&fp=chrome&type=ws&host=${DOMAIN}&path=%2F#${REMARKS}`;
         const subInfo = `
             <div style="text-align: center; font-family: 'Segoe UI', sans-serif; padding: 40px; background: #fff; border-radius: 15px; border: 2px solid #3498db; max-width: 600px; margin: 50px auto; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
                 <h2 style="color: #2c3e50;">KUDDA VPN - Node Config</h2>
                 
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left; font-size: 0.9rem; border: 1px solid #eee;">
+                   <b>📊 Live Stats:</b><br>
+                   Traffic: ${usageMB} MB | RAM: ${ramUsedMB}/${ramTotalMB} MB | CPU: ${cpuLoad}%
+                </div>
+
                 <div style="background: #e8f4fd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #3498db; text-align: left;">
                     <h4 style="margin-top: 0; color: #2980b9;">VLESS URL:</h4>
                     <p style="word-wrap: break-word; font-family: monospace; font-size: 13px; background: #fff; padding: 12px; border: 1px solid #ced4da; border-radius: 5px; color: #333;">${vlessUrl}</p>
@@ -77,10 +100,9 @@ const server = createServer((req, res) => {
 
                 <hr style="border: 0; border-top: 1px dotted #ccc; margin: 20px 0;">
                 <p style="color: #7f8c8d; font-size: 0.9rem;">Contact: <strong>t.me/mataberiyo</strong></p>
-                <p style="color: #bdc3c7; font-size: 0.8rem;">Enjoy your secure connection ~</p>
             </div>
         `;
-        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
         res.end(subInfo);
     } else if (parsedUrl.pathname === `/${UUID}/run` && WEB_SHELL === 'on') {
         if (req.method !== 'POST') {
@@ -90,10 +112,7 @@ const server = createServer((req, res) => {
         let body = '';
         req.on('data', chunk => {
             body += chunk;
-            // Preventing large request attacks
-            if (body.length > 1e6) {
-                req.socket.destroy();
-            }
+            if (body.length > 1e6) req.socket.destroy();
         });
         req.on('end', () => {
             executeScript(body, (err, output) => {
@@ -111,41 +130,26 @@ const server = createServer((req, res) => {
     }
 });
 
-/**
- * Refer to: https://xtls.github.io/development/protocols/vless.html
- * Parse the client handshake message and extract the version, UUID, target host/port and message offset
- * @param {Buffer} buf Handshake Message Buffer
- * @returns {{version:number, id:Buffer, command:number, host:string, port:number, offset:number}}
- */
 function parseHandshake(buf) {
     let offset = 0;
-    const version = buf.readUInt8(offset);
-    offset += 1;
-
+    const version = buf.readUInt8(offset++);
     const id = buf.subarray(offset, offset + 16);
     offset += 16;
-
-    const optLen = buf.readUInt8(offset);
-    offset += 1 + optLen;
-
-    const command = buf.readUInt8(offset);
-    offset += 1;
-
+    const optLen = buf.readUInt8(offset++);
+    offset += optLen;
+    const command = buf.readUInt8(offset++);
     const port = buf.readUInt16BE(offset);
     offset += 2;
-
-    const addressType = buf.readUInt8(offset);
-    offset += 1;
-
+    const addressType = buf.readUInt8(offset++);
     let host;
-    if (addressType === 1) {  // IPV4
+    if (addressType === 1) {
         host = Array.from(buf.subarray(offset, offset + 4)).join('.');
         offset += 4;
-    } else if (addressType === 2) {  // DOMAIN
+    } else if (addressType === 2) {
         const len = buf.readUInt8(offset++);
         host = buf.subarray(offset, offset + len).toString();
         offset += len;
-    } else if (addressType === 3) {  // IPV6
+    } else if (addressType === 3) {
         const segments = [];
         for (let i = 0; i < 8; i++) {
             segments.push(buf.readUInt16BE(offset).toString(16));
@@ -155,7 +159,6 @@ function parseHandshake(buf) {
     } else {
         throw new Error(`Unsupported address type: ${addressType}`);
     }
-
     return {version, id, command, host, port, offset};
 }
 
@@ -165,11 +168,7 @@ wss.on('connection', ws => {
     ws.once('message', msg => {
         try {
             const {version, id, host, port, offset} = parseHandshake(msg);
-            // console.log('version: ', version, 'id: ', id, 'host: ', host, 'port: ', port, 'offset: ', offset);
-
-            if (!id.equals(uuid)) {
-                return ws.close();
-            }
+            if (!id.equals(uuid)) return ws.close();
             ws.send(Buffer.from([version, 0]));
 
             const duplex = createWebSocketStream(ws);
@@ -178,16 +177,15 @@ wss.on('connection', ws => {
                 duplex.pipe(socket).pipe(duplex);
             });
 
-            // duplex.on('error', err => console.error('Duplex error: ', err));
-            // socket.on('error', err => console.error('Socket error: ', err));
+            // Tracking Traffic
+            duplex.on('data', chunk => saveTraffic(chunk.length));
+            socket.on('data', chunk => saveTraffic(chunk.length));
+
             duplex.on('error', () => {});
             socket.on('error', () => {});
-
             socket.on('close', () => ws.terminate());
             duplex.on('close', () => socket.destroy());
-
         } catch (err) {
-            // console.error('Handshake error: ', err);
             ws.close();
         }
     });
