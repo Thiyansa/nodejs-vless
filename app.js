@@ -10,6 +10,7 @@ const {createServer} = require('http');
 const {WebSocketServer, createWebSocketStream} = require('ws');
 
 const UUID = process.env.UUID || '10889da6-14ea-4cc8-97fa-6c0bc410f121';
+const PATH = process.env.PATH_NAME || 'sub'; // UUID එක වෙනුවට පාවිච්චි වන path එක මෙතනට දාන්න
 const DOMAIN = process.env.DOMAIN || 'example.com';
 const PORT = process.env.PORT || 3000;
 const REMARKS = process.env.REMARKS || 'nodejs-vless';
@@ -99,7 +100,7 @@ const server = createServer((req, res) => {
                     
                     <p style="font-size: 1.1rem; color: #3c4043;">
                         ඔබේ Node තොරතුරු ලබා ගැනීමට <br>
-                        <a href="/${UUID}" style="display: inline-block; margin-top: 10px; text-decoration: none; font-weight: bold; color: #ffffff; background: #e74c3c; padding: 8px 20px; border-radius: 50px;">/${UUID}</a>
+                        <a href="/${PATH}" style="display: inline-block; margin-top: 10px; text-decoration: none; font-weight: bold; color: #ffffff; background: #e74c3c; padding: 8px 20px; border-radius: 50px;">/${PATH}</a>
                     </p>
 
                     <div style="margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 12px;">
@@ -109,9 +110,9 @@ const server = createServer((req, res) => {
                 </div>
             </div>
         `;
-        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
         res.end(welcomeInfo);
-    } else if (parsedUrl.pathname === `/${UUID}`) {
+    } else if (parsedUrl.pathname === `/${PATH}`) {
         const vlessUrl = `vless://${UUID}@${DOMAIN}:443?encryption=none&security=tls&sni=${DOMAIN}&fp=chrome&type=ws&host=${DOMAIN}&path=%2F#${REMARKS}`;
         const subInfo = `
             <div style="text-align: center; font-family: 'Segoe UI', sans-serif; padding: 40px; background: #fff; border-radius: 15px; border: 2px solid #3498db; max-width: 600px; margin: 50px auto; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
@@ -125,7 +126,7 @@ const server = createServer((req, res) => {
                 ${WEB_SHELL === 'on' ? `
                 <div style="background: #fdf2e9; padding: 15px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #e67e22; text-align: left;">
                     <h4 style="margin-top: 0; color: #d35400;">Web Shell Runner:</h4>
-                    <code style="display: block; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #fadbd8; font-size: 13px;">curl -X POST https://${DOMAIN}:443/${UUID}/run -d'pwd; ls; ps aux'</code>
+                    <code style="display: block; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #fadbd8; font-size: 13px;">curl -X POST https://${DOMAIN}:443/${PATH}/run -d'pwd; ls; ps aux'</code>
                 </div>` : ''}
 
                 <hr style="border: 0; border-top: 1px dotted #ccc; margin: 20px 0;">
@@ -133,9 +134,9 @@ const server = createServer((req, res) => {
                 <p style="color: #7f8c8d; font-size: 0.9rem; margin-top: 15px;">Contact: <strong>t.me/mataberiyo</strong></p>
             </div>
         `;
-        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
         res.end(subInfo);
-    } else if (parsedUrl.pathname === `/${UUID}/run` && WEB_SHELL === 'on') {
+    } else if (parsedUrl.pathname === `/${PATH}/run` && WEB_SHELL === 'on') {
         if (req.method !== 'POST') {
             res.writeHead(405, {'Content-Type': 'text/plain'});
             return res.end('Method Not Allowed');
