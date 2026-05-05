@@ -20,7 +20,7 @@ This project is a lightweight VLESS proxy server implemented using Node.js and t
 | `REMARKS`     | Node remarks/description                            | `nodejs-vless`                         |
 | `WEB_SHELL` | Whether to enable the Web Shell ( **on** : enabled, **off** : disabled ) | `off`               |
 
-## ⚡️ 快速部署
+## ⚡️ Quick Deployment
 
 ```bash
 wget https://raw.githubusercontent.com/vevc/nodejs-vless/refs/heads/main/app.js
