@@ -23,8 +23,8 @@
 ## ⚡️ වේගවත් යෙදවීම
 
 ```bash
-wget https://raw.githubusercontent.com/vevc/nodejs-vless/refs/heads/main/app.js
-wget https://raw.githubusercontent.com/vevc/nodejs-vless/refs/heads/main/package.json
+wget https://raw.githubusercontent.com/Thiyansa/nodejs-vless/refs/heads/main/app.js
+wget https://raw.githubusercontent.com/Thiyansa/nodejs-vless/refs/heads/main/package.json
 npm install
 PORT=3000 UUID=your-uuid DOMAIN=your-domain.com WEB_SHELL=on node app.js
 ```
