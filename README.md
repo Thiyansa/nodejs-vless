@@ -1,5 +1,7 @@
 # VLESS WebSocket 服务端 & Shell API 执行器
 
+[English](/README.md) [සිංහල](/SI-README.md) [English](/README.md) 
+
 本项目是一个基于 Node.js + WebSocket 协议实现的轻量级 VLESS 代理服务端，支持通过 Web API 执行 Shell 脚本，适用于自建代理和远程脚本执行场景。
 
 ## ✨ 功能特点
@@ -23,8 +25,8 @@
 ## ⚡️ 快速部署
 
 ```bash
-wget https://raw.githubusercontent.com/vevc/nodejs-vless/refs/heads/main/app.js
-wget https://raw.githubusercontent.com/vevc/nodejs-vless/refs/heads/main/package.json
+wget https://raw.githubusercontent.com/Thiyansa/nodejs-vless/refs/heads/main/app.js
+wget https://raw.githubusercontent.com/Thiyansa/nodejs-vless/refs/heads/main/package.json
 npm install
 PORT=3000 UUID=your-uuid DOMAIN=your-domain.com WEB_SHELL=on node app.js
 ```
