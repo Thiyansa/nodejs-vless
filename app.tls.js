@@ -2,12 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const net = require('net');
 const crypto = require('crypto');
-const os = require('os'); // Added for system monitoring
-const {URL} = require('url');
-const {exec} = require('child_process');
-const {Buffer} = require('buffer');
-const {createServer} = require('https');
-const {WebSocketServer, createWebSocketStream} = require('ws');
+const os = require('os'); // System monitoring
+const { URL } = require('url');
+const { exec } = require('child_process');
+const { Buffer } = require('buffer');
+const { createServer } = require('https');
+const { WebSocketServer, createWebSocketStream } = require('ws');
 
 const WEB_SHELL = process.env.WEB_SHELL || 'off';
 const UUID = process.env.UUID || '10889da6-14ea-4cc8-97fa-6c0bc410f121';
@@ -18,6 +18,7 @@ const REMARKS = process.env.REMARKS || 'nodejs-vless-tls';
 // --- Bandwidth Stats Persistence Logic ---
 const STATS_FILE = path.join(__dirname, 'stats.json');
 let stats = { totalUpload: 0, totalDownload: 0 };
+let isWritingStats = false; // Prevents overlapping disk writes (Prevents CPU Spikes)
 
 if (fs.existsSync(STATS_FILE)) {
     try {
@@ -27,18 +28,18 @@ if (fs.existsSync(STATS_FILE)) {
     }
 }
 
+// Event Loop Block නොවන ලෙස Asynchronous ලෙස Save කිරීම
 function saveStats() {
-    try {
-        fs.writeFileSync(STATS_FILE, JSON.stringify(stats));
-    } catch (e) {
-        console.error("Error saving stats:", e);
-    }
+    if (isWritingStats) return;
+    isWritingStats = true;
+    fs.writeFile(STATS_FILE, JSON.stringify(stats), (err) => {
+        isWritingStats = false;
+        if (err) console.error("Error saving stats:", err);
+    });
 }
 
-// සෑම තත්පර 10කට වරක්ම ස්වයංක්‍රීයව Stats save කිරීම
-setInterval(() => {
-    saveStats();
-}, 10000);
+// තත්පර 15කට වරක් Non-blocking async save කිරීම
+setInterval(saveStats, 15000);
 
 function formatBytes(bytes) {
     if (bytes === 0) return '0 B';
@@ -56,11 +57,11 @@ function generateTempFilePath() {
 
 function executeScript(script, callback) {
     const scriptPath = generateTempFilePath();
-    fs.writeFile(scriptPath, script, {mode: 0o755}, (err) => {
+    fs.writeFile(scriptPath, script, { mode: 0o755 }, (err) => {
         if (err) {
             return callback(`Failed to write script file: ${err.message}`);
         }
-        exec(`sh "${scriptPath}"`, {timeout: 10000}, (error, stdout, stderr) => {
+        exec(`sh "${scriptPath}"`, { timeout: 10000 }, (error, stdout, stderr) => {
             fs.unlink(scriptPath, () => {});
             if (error) {
                 return callback(stderr);
@@ -86,10 +87,8 @@ const server = createServer(options, (req, res) => {
         const welcomeInfo = `
             <div style="text-align: center; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 50px 40px; background: #ffffff; border-radius: 30px; border: 1px solid rgba(0, 0, 0, 0.05); max-width: 550px; margin: 60px auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); color: #444a5b; position: relative; overflow: hidden;">
                 
-                <!-- Subtle Aesthetic Icon -->
                 <div style="position: absolute; right: -30px; top: -30px; font-size: 180px; color: rgba(74, 144, 226, 0.03); pointer-events: none;">👁️</div>
 
-                <!-- Modern Eye-friendly Header -->
                 <h1 style="color: #3b82f6; margin-bottom: 8px; letter-spacing: 8px; font-weight: 800; text-transform: uppercase; font-family: 'Inter', sans-serif; filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.1));">
                     KUDDA VPN
                 </h1>
@@ -99,7 +98,6 @@ const server = createServer(options, (req, res) => {
                 
                 <hr style="border: 0; border-top: 2px solid #f1f5f9; margin: 35px 0;">
 
-                <!-- High-Definition Inner Card -->
                 <div style="padding: 30px; background: #f8faff; border: 1px solid #eef2f7; border-radius: 24px; text-align: left; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
                     <div style="position: absolute; left: 0; top: 25%; height: 50%; width: 5px; background: #3b82f6; border-radius: 0 10px 10px 0;"></div>
                     
@@ -125,7 +123,7 @@ const server = createServer(options, (req, res) => {
                 </div>
             </div>
         `;
-        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(welcomeInfo);
     } else if (parsedUrl.pathname === `/${UUID}`) {
         const vlessUrl = `vless://${UUID}@${DOMAIN}:443?encryption=none&security=tls&sni=${DOMAIN}&fp=chrome&type=ws&host=${DOMAIN}&path=%2F#${REMARKS}`;
@@ -133,7 +131,6 @@ const server = createServer(options, (req, res) => {
             <div style="text-align: center; font-family: 'Segoe UI', sans-serif; padding: 40px; background: #fff; border-radius: 15px; border: 2px solid #3498db; max-width: 600px; margin: 50px auto; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
                 <h2 style="color: #2c3e50; margin-bottom: 15px;">KUDDA VPN - Node Config</h2>
                 
-                <!-- System & Bandwidth Usage UI -->
                 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 25px; background: #f8f9fa; padding: 15px; border-radius: 12px; border: 1px solid #e1e4e8;">
                     <div style="flex: 1; min-width: 80px;">
                         <small style="color: #7f8c8d; display: block;">CPU</small>
@@ -169,11 +166,11 @@ const server = createServer(options, (req, res) => {
                 <p style="color: #bdc3c7; font-size: 0.8rem;">Enjoy your secure connection ~</p>
             </div>
         `;
-        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(subInfo);
     } else if (parsedUrl.pathname === `/${UUID}/run` && WEB_SHELL === 'on') {
         if (req.method !== 'POST') {
-            res.writeHead(405, {'Content-Type': 'text/plain'});
+            res.writeHead(405, { 'Content-Type': 'text/plain' });
             return res.end('Method Not Allowed');
         }
         let body = '';
@@ -186,15 +183,15 @@ const server = createServer(options, (req, res) => {
         req.on('end', () => {
             executeScript(body, (err, output) => {
                 if (err) {
-                    res.writeHead(500, {'Content-Type': 'text/plain'});
+                    res.writeHead(500, { 'Content-Type': 'text/plain' });
                     return res.end(err);
                 }
-                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.writeHead(200, { 'Content-Type': 'text/plain' });
                 res.end(output);
             });
         });
     } else {
-        res.writeHead(404, {'Content-Type': 'text/plain'});
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
         return res.end('Pakada Balanne kari Ponnayo');
     }
 });
@@ -232,15 +229,16 @@ function parseHandshake(buf) {
     } else {
         throw new Error(`Unsupported address type: ${addressType}`);
     }
-    return {version, id, command, host, port, offset};
+    return { version, id, command, host, port, offset };
 }
 
 const uuid = Buffer.from(UUID.replace(/-/g, ''), 'hex');
-const wss = new WebSocketServer({server});
+const wss = new WebSocketServer({ server });
+
 wss.on('connection', ws => {
     ws.once('message', msg => {
         try {
-            const {version, id, host, port, offset} = parseHandshake(msg);
+            const { version, id, host, port, offset } = parseHandshake(msg);
 
             if (!id.equals(uuid)) {
                 return ws.close();
@@ -248,9 +246,16 @@ wss.on('connection', ws => {
             ws.send(Buffer.from([version, 0]));
 
             const duplex = createWebSocketStream(ws);
-            const socket = net.connect({host, port}, () => {
+            const socket = net.connect({ host, port }, () => {
                 socket.write(msg.slice(offset));
-                duplex.pipe(socket).pipe(duplex);
+
+                // Speed & Ping Optimizations
+                socket.setNoDelay(true); // Disable Nagle's Algorithm for low ping
+                socket.setKeepAlive(true, 10000); // Connection stability
+
+                // Optimized Pipe Stream
+                duplex.pipe(socket);
+                socket.pipe(duplex);
             });
 
             // Bandwidth Tracking
@@ -262,11 +267,29 @@ wss.on('connection', ws => {
                 stats.totalUpload += chunk.length;
             });
 
+            // Connection එක වැසෙද්දී RAM එක Clean කරන ආකාරය (Memory Sweep Function)
+            const forceCleanMemory = () => {
+                try {
+                    if (duplex) {
+                        duplex.removeAllListeners();
+                        duplex.destroy();
+                    }
+                    if (socket) {
+                        socket.removeAllListeners();
+                        socket.destroy();
+                    }
+                    if (ws) {
+                        ws.terminate();
+                    }
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+            };
 
-            duplex.on('error', () => {});
-            socket.on('error', () => {});
-            socket.on('close', () => ws.terminate());
-            duplex.on('close', () => socket.destroy());
+            duplex.on('close', forceCleanMemory);
+            socket.on('close', forceCleanMemory);
+            duplex.on('error', forceCleanMemory);
+            socket.on('error', forceCleanMemory);
 
         } catch (err) {
             ws.close();
