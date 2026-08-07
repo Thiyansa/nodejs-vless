@@ -1,5 +1,7 @@
 # VLESS WebSocket Server & Shell API Executor
 
+[中文](/README.md) | [සිංහල](/SI-README.md) | [English](/EN-README.md) 
+
 This project is a lightweight VLESS proxy server implemented using Node.js and the WebSocket protocol. It supports executing Shell scripts via a Web API and is suitable for self-hosted proxy setups and remote script execution scenarios.
 
 ## ✨ Key Features
