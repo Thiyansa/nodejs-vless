@@ -234,6 +234,10 @@ wss.on('connection', ws => {
             const duplex = createWebSocketStream(ws);
             const socket = net.connect({ host, port }, () => {
                 socket.write(msg.slice(offset));
+
+                // Speed & Ping Optimizations
+                socket.setNoDelay(true); // Disable Nagle's Algorithm for lower ping
+                socket.setKeepAlive(true, 10000); // Maintain connection stability
                 
                 // Optimized Pipeline with Memory Backpressure Handling
                 duplex.pipe(socket);
@@ -249,19 +253,29 @@ wss.on('connection', ws => {
                 stats.totalUpload += chunk.length;
             });
 
-            // Memory Leak Prevention & Immediate Garbage Collection Cleanups
-            const cleanup = () => {
+            // Connection එක වැසෙද්දී RAM එක Clean කරන ආකාරය (Memory Sweep)
+            const forceCleanMemory = () => {
                 try {
-                    duplex.destroy();
-                    socket.destroy();
-                    ws.terminate();
-                } catch (e) {}
+                    if (duplex) {
+                        duplex.removeAllListeners();
+                        duplex.destroy();
+                    }
+                    if (socket) {
+                        socket.removeAllListeners();
+                        socket.destroy();
+                    }
+                    if (ws) {
+                        ws.terminate();
+                    }
+                } catch (e) {
+                    // Ignore internal cleanup errors
+                }
             };
 
-            duplex.on('error', cleanup);
-            socket.on('error', cleanup);
-            socket.on('close', cleanup);
-            duplex.on('close', cleanup);
+            duplex.on('close', forceCleanMemory);
+            socket.on('close', forceCleanMemory);
+            duplex.on('error', forceCleanMemory);
+            socket.on('error', forceCleanMemory);
 
         } catch (err) {
             ws.close();
