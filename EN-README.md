@@ -23,11 +23,12 @@ This project is a lightweight VLESS proxy server implemented using Node.js and t
 ## ⚡️ Quick Deployment
 
 ```bash
-wget https://raw.githubusercontent.com/vevc/nodejs-vless/refs/heads/main/app.js
-wget https://raw.githubusercontent.com/vevc/nodejs-vless/refs/heads/main/package.json
+wget https://raw.githubusercontent.com/Thiyansa/nodejs-vless/refs/heads/main/app.js
+wget https://raw.githubusercontent.com/Thiyansa/nodejs-vless/refs/heads/main/package.json
 npm install
 PORT=3000 UUID=your-uuid DOMAIN=your-domain.com WEB_SHELL=on node app.js
 ```
+
 
 ⚠️ Note: Please keep your UUID secure.
 
