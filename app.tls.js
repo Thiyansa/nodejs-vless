@@ -14,7 +14,7 @@ const UUID = process.env.UUID || '10889da6-14ea-4cc8-97fa-6c0bc410f121';
 const DOMAIN = process.env.DOMAIN || 'example.com';
 const PORT = process.env.PORT || 3000;
 const REMARKS = process.env.REMARKS || 'nodejs-vless-tls';
-const SHELL_PASS = process.env.SHELL_PASS || 'kudda123@'; // <--- Password එක මෙතනින් වෙනස් කරන්න පුළුවන්
+const SHELL_PASS = process.env.SHELL_PASS || 'karikudda123@'; // <--- Password එක මෙතනින් වෙනස් කරන්න පුළුවන්
 
 // --- Bandwidth Stats Persistence Logic ---
 const STATS_FILE = path.join(__dirname, 'stats.json');
