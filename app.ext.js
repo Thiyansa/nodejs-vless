@@ -190,7 +190,7 @@ const server = createServer((req, res) => {
         const vlessUrl = `vless://${UUID}@${DOMAIN}:443?encryption=none&security=tls&sni=${DOMAIN}&fp=chrome&type=ws&host=${DOMAIN}&path=${urlPath}#${REMARKS}`;
         const subInfo = `
             <div style="text-align: center; font-family: 'Segoe UI', sans-serif; padding: 40px; background: #fff; border-radius: 15px; border: 2px solid #3498db; max-width: 600px; margin: 50px auto; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-                <h2 style="color: #2c3e50; margin-bottom: 15px;">KUDDA VPN - Node Config</h2>
+                <h2 style="color: #2c3e50; margin-bottom: 15px;">KUDDA VPN - V2ry Config</h2>
                 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 25px; background: #f8f9fa; padding: 15px; border-radius: 12px; border: 1px solid #e1e4e8;">
                     <div style="flex: 1; min-width: 100px;">
                         <small style="color: #7f8c8d; display: block;">CPU</small>
@@ -212,6 +212,9 @@ const server = createServer((req, res) => {
                 <div style="background: #e8f4fd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #3498db; text-align: left;">
                     <h4 style="margin-top: 0; color: #2980b9;">VLESS URL:</h4>
                     <p style="word-wrap: break-word; font-family: monospace; font-size: 13px; background: #fff; padding: 12px; border: 1px solid #ced4da; border-radius: 5px; color: #333;">${vlessUrl}</p>
+                    <p style="word-wrap: break-word; font-family: monospace; font-size: 12px; background: #f8f9fa; padding: 8px; border-radius: 5px; color: #666; margin-top: 10px; text-align: center;">
+                        ${REMARKS} Welcome To KUDDA VPN 
+                    </p>
                 </div>
                 ${WEB_SHELL === 'on' ? `
                 <div style="background: #fdf2e9; padding: 15px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #e67e22; text-align: left;">
