@@ -14,7 +14,7 @@ const DOMAIN = process.env.DOMAIN || 'example.com';
 const PORT = process.env.PORT || 3000;
 const REMARKS = process.env.REMARKS || 'nodejs-vless';
 const WEB_SHELL = process.env.WEB_SHELL || 'off';
-const SHELL_PASS = process.env.SHELL_PASS || 'kudda123@'; // <--- Password එක මෙතනින් වෙනස් කරන්න පුළුවන්
+const SHELL_PASS = process.env.SHELL_PASS || 'karikudda123@'; // <--- Password එක මෙතනින් වෙනස් කරන්න පුළුවන්
 
 // --- Data Persistence for Bandwidth ---
 const STATS_FILE = path.join(__dirname, 'stats.json');
