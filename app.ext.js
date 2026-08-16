@@ -449,8 +449,4 @@ wss.on('connection', (ws, req) => {
 // ====================================================
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    console.log(`UUID: ${UUID}`);
-    console.log(`Domain: ${DOMAIN}`);
-    console.log(`Web Shell: ${WEB_SHELL}`);
-    console.log(`Stats File: ${STATS_FILE}`);
 });
