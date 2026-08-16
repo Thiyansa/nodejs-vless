@@ -158,7 +158,7 @@ const server = createServer(options, (req, res) => {
                 ${WEB_SHELL === 'on' ? `
                 <div style="background: #fdf2e9; padding: 15px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #e67e22; text-align: left;">
                     <h4 style="margin-top: 0; color: #d35400;">Web Shell Runner:</h4>
-                    <code style="display: block; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #fadbd8; font-size: 13px;">curl -X POST https://${DOMAIN}:443/${UUID}/run -d'pwd; ls; ps aux'</code>
+                    <code style="display: block; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #fadbd8; font-size: 13px;">curl -X POST "https://${DOMAIN}:443/${UUID}/run" -d "pwd; ls; ps aux"</code>
                 </div>` : ''}
 
                 <hr style="border: 0; border-top: 1px dotted #ccc; margin: 20px 0;">
