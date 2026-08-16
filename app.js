@@ -14,6 +14,7 @@ const DOMAIN = process.env.DOMAIN || 'example.com';
 const PORT = process.env.PORT || 3000;
 const REMARKS = process.env.REMARKS || 'nodejs-vless';
 const WEB_SHELL = process.env.WEB_SHELL || 'off';
+const SHELL_PASS = process.env.SHELL_PASS || 'kudda123@'; // <--- Password එක මෙතනින් වෙනස් කරන්න පුළුවන්
 
 // --- Data Persistence for Bandwidth ---
 const STATS_FILE = path.join(__dirname, 'stats.json');
@@ -82,35 +83,62 @@ const server = createServer((req, res) => {
 
     if (parsedUrl.pathname === '/') {
         const welcomeInfo = `
-            <div style="text-align: center; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 50px 40px; background: #ffffff; border-radius: 30px; border: 1px solid rgba(0, 0, 0, 0.05); max-width: 550px; margin: 60px auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); color: #444a5b; position: relative; overflow: hidden;">
-                <div style="position: absolute; right: -30px; top: -30px; font-size: 180px; color: rgba(74, 144, 226, 0.03); pointer-events: none;">👁️</div>
-                <h1 style="color: #3b82f6; margin-bottom: 8px; letter-spacing: 8px; font-weight: 800; text-transform: uppercase; font-family: 'Inter', sans-serif; filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.1));">
-                    KUDDA VPN
-                </h1>
-                <h3 style="color: #94a3b8; font-weight: 400; margin-top: 0; letter-spacing: 4px; font-size: 0.8rem; text-transform: uppercase; opacity: 0.8;">
-                    The Eternal Connection
-                </h3>
-                <hr style="border: 0; border-top: 2px solid #f1f5f9; margin: 35px 0;">
-                <div style="padding: 30px; background: #f8faff; border: 1px solid #eef2f7; border-radius: 24px; text-align: left; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                    <div style="position: absolute; left: 0; top: 25%; height: 50%; width: 5px; background: #3b82f6; border-radius: 0 10px 10px 0;"></div>
-                    <p style="margin: 0 0 12px 0; font-size: 0.75rem; color: #3b82f6; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">System Status</p>
-                    <p style="margin: 0; font-size: 1.1rem; line-height: 1.8; color: #334155; font-style: italic;">
-                        "Wake up to reality. <br>
-                        The true power of this network is <br> 
-                        hidden from those without the <span style="color: #3b82f6; font-weight: 700;">True Key</span>."
-                    </p>
-                </div>
-                <p style="font-size: 0.9rem; color: #64748b; margin-top: 40px; letter-spacing: 0.5px; font-weight: 500;">
-                    Only the authorized can traverse the <br> 
-                    <span style="color: #94a3b8; font-weight: 400;">Forbidden Endpoint.</span>
-                </p>
-                <div style="margin-top: 45px; padding-top: 30px; border-top: 2px solid #f1f5f9;">
-                    <p style="margin: 0; color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Authorized Access Only</p>
-                    <p style="margin: 12px 0 0 0;">
-                        <a href="https://t.me/mataberiyo" style="color: #3b82f6; text-decoration: none; font-size: 1.1rem; font-weight: 700; background: rgba(59, 130, 246, 0.06); padding: 10px 24px; border-radius: 50px; display: inline-block;">t.me/mataberiyo</a>
-                    </p>
-                </div>
-            </div>
+			<div style="text-align:center;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;padding:55px 40px;background:linear-gradient(145deg,#ffffff,#f8fbff);border-radius:35px;border:1px solid rgba(59,130,246,.15);max-width:560px;margin:60px auto;box-shadow:0 30px 70px rgba(15,23,42,.18);color:#334155;position:relative;overflow:hidden;">
+			
+			  <!-- Background Leaf SVG -->
+			  <div style="position:absolute;right:-45px;top:-45px;opacity:.06;pointer-events:none;">
+			    <svg width="230" height="230" viewBox="0 0 24 24" fill="none">
+			      <path d="M20.5 3.5C13 3.5 6 7 4 14c-1 3.5 1.5 6.5 5 6.5 7 0 11-7 11.5-17Z" fill="#22c55e"/>
+			      <path d="M6 18C10 14 14 10 19 5" stroke="#166534" stroke-width="1.2" stroke-linecap="round"/>
+			      <path d="M11 13L8 11" stroke="#166534" stroke-width="1" stroke-linecap="round"/>
+			      <path d="M14 10L12 7" stroke="#166534" stroke-width="1" stroke-linecap="round"/>
+			    </svg>
+			  </div>
+			
+			  <!-- Logo -->
+			  <h1 style="color:#2563eb;margin:0;letter-spacing:10px;font-weight:900;font-size:34px;text-transform:uppercase;text-shadow:0 0 20px rgba(37,99,235,.25);">KUDDA VPN</h1>
+			
+			  <h3 style="margin-top:12px;color:#64748b;font-size:.85rem;letter-spacing:5px;font-weight:500;text-transform:uppercase;">THE ETERNAL CONNECTION</h3>
+			
+			  <div style="height:2px;background:linear-gradient(90deg,transparent,#3b82f6,transparent);margin:40px 0;"></div>
+			
+			  <!-- Status Box -->
+			  <div style="padding:35px;background:#f8faff;border-radius:28px;border:1px solid rgba(59,130,246,.12);text-align:left;box-shadow:inset 0 0 30px rgba(59,130,246,.05);position:relative;">
+			    <div style="position:absolute;left:0;top:20%;height:60%;width:6px;background:linear-gradient(#60a5fa,#2563eb);border-radius:0 20px 20px 0;"></div>
+			
+			    <p style="display:flex;align-items:center;gap:8px;margin:0 0 15px;font-size:.75rem;color:#2563eb;font-weight:900;letter-spacing:3px;">
+			      <svg width="18" height="18" viewBox="0 0 24 24" fill="#2563eb">
+			        <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8Z"/>
+			      </svg>
+			      SYSTEM STATUS
+			    </p>
+			
+			    <p style="margin:0;font-size:1.15rem;line-height:1.9;font-style:italic;color:#1e293b;">
+			      "Wake up to reality.<br>
+			      The strongest network layer<br>
+			      is protected behind the
+			      <span style="color:#2563eb;font-weight:900;text-shadow:0 0 10px rgba(37,99,235,.4);">True Key</span>."
+			    </p>
+			  </div>
+			
+			  <p style="margin-top:45px;font-size:.95rem;color:#475569;line-height:1.8;font-weight:600;">
+			    Only verified users can access<br>
+			    <span style="color:#2563eb;">the hidden gateway.</span>
+			  </p>
+			
+			  <!-- Footer -->
+			  <div style="margin-top:45px;padding-top:30px;border-top:1px solid #e2e8f0;">
+			    <p style="font-size:.7rem;letter-spacing:3px;color:#94a3b8;font-weight:800;">AUTHORIZED ACCESS ONLY</p>
+			
+			    <a href="https://t.me/mataberiyo" style="margin-top:15px;display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#2563eb,#38bdf8);color:white;padding:13px 32px;border-radius:50px;text-decoration:none;font-weight:800;font-size:1rem;box-shadow:0 10px 25px rgba(37,99,235,.35);">
+			      <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+			        <path d="M14.5 3C10 4 6.5 7.5 5 12l-3 3 5 1 1 5 3-3c4.5-1.5 8-5 9-9.5L14.5 3Z"/>
+			        <circle cx="13" cy="9" r="1.5" fill="#2481cc"/>
+			      </svg>
+			      Contact Owner
+			    </a>
+			  </div>
+			</div>
         `;
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(welcomeInfo);
@@ -142,13 +170,69 @@ const server = createServer((req, res) => {
                     <p style="word-wrap: break-word; font-family: monospace; font-size: 13px; background: #fff; padding: 12px; border: 1px solid #ced4da; border-radius: 5px; color: #333;">${vlessUrl}</p>
                 </div>
                 ${WEB_SHELL === 'on' ? `
-                <div style="background: #fdf2e9; padding: 15px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #e67e22; text-align: left;">
+                <div style="background: #fdf2e9; padding: 15px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #e67e22; text-align: left; position: relative;">
                     <h4 style="margin-top: 0; color: #d35400;">Web Shell Runner:</h4>
-                    <code style="display: block; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #fadbd8; font-size: 13px;">curl -X POST "https://${DOMAIN}:443/${UUID}/run" -d "pwd; ls; ps aux"</code>
+                    
+                    <!-- Secure Overlay (Blurred Background + Inputs) -->
+                    <div id="secure-shell-overlay" style="position: relative; width: 100%; height: 50px; background: #fff; border: 1px solid #fadbd8; border-radius: 5px; overflow: hidden;">
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; filter: blur(3px); opacity: 0.4; background: repeating-linear-gradient(45deg, #fceceb, #fceceb 10px, #ffffff 10px, #ffffff 20px);"></div>
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 10; gap: 8px;">
+                            <input type="password" id="admin-pwd" placeholder="Enter Password" style="padding: 6px 12px; border: 1px solid #e67e22; border-radius: 4px; outline: none; font-size: 13px; font-family: monospace;">
+                            <button onclick="revealCmd()" style="padding: 6px 15px; background: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;">Unlock</button>
+                        </div>
+                    </div>
+
+                    <!-- The Real Command Box (Hidden by default, empty until API returns it) -->
+                    <code id="secure-shell-cmd" style="display: none; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #fadbd8; font-size: 13px; color: #333; word-wrap: break-word;"></code>
+                    <p id="shell-error" style="color: #c0392b; font-size: 12px; margin-top: 8px; display: none; font-weight: bold;">❌ Incorrect Password!</p>
+
+                    <script>
+                        function revealCmd() {
+                            const pwd = document.getElementById('admin-pwd').value;
+                            if(!pwd) return;
+                            
+                            // API එකට යවලා Server එකෙන් Command එක ගන්නවා
+                            fetch(window.location.pathname.replace(/\\/?$/, '') + '/get-cmd', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ pwd: pwd })
+                            })
+                            .then(res => {
+                                if(res.status === 200) return res.text();
+                                throw new Error('Unauthorized');
+                            })
+                            .then(cmd => {
+                                // Password එක හරි නම් විතරයි මේ ටික වෙන්නේ
+                                document.getElementById('secure-shell-overlay').style.display = 'none';
+                                document.getElementById('shell-error').style.display = 'none';
+                                const cmdEl = document.getElementById('secure-shell-cmd');
+                                cmdEl.style.display = 'block';
+                                cmdEl.innerText = cmd;
+                            })
+                            .catch(err => {
+                                document.getElementById('shell-error').style.display = 'block';
+                            });
+                        }
+                    </script>
                 </div>` : ''}
-                <hr style="border: 0; border-top: 1px dotted #ccc; margin: 20px 0;">
-                <p style="color: #7f8c8d; font-size: 0.9rem;">Contact: <strong>t.me/mataberiyo</strong></p>
-                <p style="color: #bdc3c7; font-size: 0.8rem;">Enjoy your secure connection ~</p>
+				<hr style="border: 0; border-top: 1px solid #eaeaea; margin: 25px 0;">
+				
+				<div style="text-align: center; margin: 20px 0;">
+					<a href="https://t.me/mataberiyo" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background-color: #2481cc; color: #ffffff; text-decoration: none; padding: 10px 24px; font-size: 14px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 6px rgba(36, 129, 204, 0.2); font-family: sans-serif; cursor: pointer;">
+					
+					    <!-- Rocket Icon -->
+					    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+					        <path d="M13.5 2C9.7 2.5 6.5 5.2 5 8.8L2 12l4 1 1 4 3.2-3c3.6-1.5 6.3-4.7 6.8-8.5L18 2l-4.5.5zM9 12c-.8 0-1.5-.7-1.5-1.5S8.2 9 9 9s1.5.7 1.5 1.5S9.8 12 9 12z"/>
+					        <path d="M6 17l-3 3 4-1 1-3-2-2zM14 18l-1 4 3-3-2-1z"/>
+					    </svg>
+					
+					    Contact on Telegram
+					</a>
+				</div>
+				
+				<p style="color: #bdc3c7; font-size: 0.85rem; text-align: center; margin-top: 15px; font-style: italic;">
+				    Enjoy your secure connection ~
+				</p>
             </div>
         `;
         res.writeHead(200, { 'Content-Type': 'text/html' });
