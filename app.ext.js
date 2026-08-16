@@ -145,7 +145,7 @@ const server = createServer((req, res) => {
     const cpuLoad = (os.loadavg()[0]).toFixed(2);
 
     // ========== ROUTE: HOME PAGE ==========
-    if (parsedUrl.pathname === '/home') {
+    if (parsedUrl.pathname === '/') {
         const welcomeInfo = `
 			<div style="text-align:center;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;padding:55px 40px;background:linear-gradient(145deg,#ffffff,#f8fbff);border-radius:35px;border:1px solid rgba(59,130,246,.15);max-width:560px;margin:60px auto;box-shadow:0 30px 70px rgba(15,23,42,.18);color:#334155;position:relative;overflow:hidden;">
 			
